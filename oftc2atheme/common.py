@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cache
 from typing import Optional
 
 from psycopg import Connection
@@ -39,6 +40,7 @@ class Nickname:
     last_seen: Optional[int]
 
 
+@cache
 def account_name(
     conn: Connection[Row],
     account_id: int,
@@ -79,6 +81,7 @@ class Channel:
     last_used: int
 
 
+@cache
 def channel_name(
     conn: Connection[Row],
     channel_id: int,
@@ -102,6 +105,7 @@ class Group:
     reg_time: int
 
 
+@cache
 def group_name(
     conn: Connection[Row],
     group_id: int,
