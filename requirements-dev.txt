@@ -1,0 +1,26 @@
+-r requirements.txt
+
+flake8
+flake8-2020
+flake8-annotations
+flake8-bandit
+flake8-commas
+flake8-comprehensions
+flake8-continuation
+flake8-datetimez
+flake8-eradicate
+flake8-executable
+flake8-fixme
+flake8-functions
+flake8-literal
+flake8-markdown
+flake8-mutable
+flake8-noqa
+flake8-pantsbuild
+flake8-pathlib
+flake8-raise
+flake8-sfs
+flake8-simplify
+flake8-super
+flake8-tabs
+mypy
