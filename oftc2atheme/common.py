@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from functools import cache
 from typing import Optional
+from typing import cast
 
 from psycopg import Connection
 from psycopg.rows import Row
-from psycopg.rows import class_row
+from psycopg.rows import tuple_row
 
 
 @dataclass
@@ -45,14 +46,14 @@ def account_name(
     conn: Connection[Row],
     account_id: int,
 ) -> str:
-    with conn.cursor(row_factory=class_row(Nickname)) as curs:
+    with conn.cursor(row_factory=tuple_row) as curs:
         result = curs.execute(
             'SELECT nick FROM account, nickname '
             'WHERE account.id = %s AND account.primary_nick=nickname.id',
             (account_id,),
         ).fetchone()
         assert result is not None
-        return result.nick
+        return cast(str, result[0])
 
 
 @dataclass
@@ -86,12 +87,12 @@ def channel_name(
     conn: Connection[Row],
     channel_id: int,
 ) -> str:
-    with conn.cursor(row_factory=class_row(Channel)) as curs:
+    with conn.cursor(row_factory=tuple_row) as curs:
         result = curs.execute(
             'SELECT channel FROM channel WHERE id = %s', (channel_id,),
         ).fetchone()
         assert result is not None
-        return result.channel
+        return cast(str, result[0])
 
 
 @dataclass
@@ -110,12 +111,12 @@ def group_name(
     conn: Connection[Row],
     group_id: int,
 ) -> str:
-    with conn.cursor(row_factory=class_row(Group)) as curs:
+    with conn.cursor(row_factory=tuple_row) as curs:
         result = curs.execute(
             'SELECT name FROM group WHERE id = %s', (group_id,),
         ).fetchone()
         assert result is not None
-        return result.name
+        return cast(str, result[0])
 
 
 _entity_id = -1
