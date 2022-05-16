@@ -7,7 +7,7 @@ from psycopg.rows import class_row
 
 from .common import Group
 from .common import account_name
-from .common import entity_id
+from .common import next_entity_id
 
 
 @dataclass
@@ -28,7 +28,6 @@ class GroupPermission(Enum):
 
 def do_group(
     conn: Connection[Row],
-    ent_id: int,
     group: Group,
 ) -> None:
     flags = '+'
@@ -38,7 +37,7 @@ def do_group(
         if flag:
             flags += flag_char
 
-    print(f'GRP {entity_id(ent_id)} {group.name} {group.reg_time} {flags}')
+    print(f'GRP {next_entity_id()} {group.name} {group.reg_time} {flags}')
 
     for attr, md_name in (
         (group.description, 'description'),
@@ -76,5 +75,5 @@ def do_groups(
     print('GDBV 4')
     print('GFA +AFbcfimsv')
     with conn.cursor(row_factory=class_row(Group)) as curs:
-        for i, group in enumerate(curs.execute('SELECT * FROM group')):
-            do_group(conn, i, group)
+        for group in curs.execute('SELECT * FROM group'):
+            do_group(conn, group)

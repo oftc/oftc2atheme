@@ -118,8 +118,21 @@ def group_name(
         return result.name
 
 
+_entity_id = -1
+
+
 def entity_id(
     ent_id: int,
 ) -> str:
     return ''.join(chr(ord('A') + ((ent_id // pow(26, i)) % 26))
                    for i in range(8, -1, -1))
+
+
+def next_entity_id() -> str:
+    global _entity_id
+    _entity_id += 1
+    return entity_id(_entity_id)
+
+
+def last_entity_id() -> str:
+    return entity_id(_entity_id)

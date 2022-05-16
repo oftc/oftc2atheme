@@ -10,7 +10,7 @@ from .common import Account
 from .common import Nickname
 from .common import account_name
 from .common import channel_name
-from .common import entity_id
+from .common import next_entity_id
 
 
 @dataclass
@@ -37,7 +37,6 @@ class AccountAutojoin:
 
 def do_user(
     conn: Connection[Row],
-    ent_id: int,
     account: Account,
 ) -> None:
     name = account_name(conn, account.id)
@@ -53,7 +52,7 @@ def do_user(
         if flag:
             flags += flag_char
 
-    print(f'MU {entity_id(ent_id)} {name} {crypt} {account.email} '
+    print(f'MU {next_entity_id()} {name} {crypt} {account.email} '
           f'{account.reg_time} {account.last_quit_time} {flags} default')
 
     for attr, md_name in (
@@ -134,6 +133,5 @@ def do_users(
     conn: Connection[Row],
 ) -> None:
     with conn.cursor(row_factory=class_row(Account)) as curs:
-        for i, account in enumerate(curs.execute('SELECT * FROM account')):
-            do_user(conn, i, account)
-    print(f'LUID {entity_id(i)}')
+        for account in curs.execute('SELECT * FROM account'):
+            do_user(conn, account)

@@ -39,6 +39,7 @@ from psycopg import connect
 
 from .channel import do_cf
 from .channel import do_channels
+from .common import last_entity_id
 from .group import do_groups
 from .user import do_users
 
@@ -52,6 +53,7 @@ def main() -> int:
         do_users(conn)
         do_groups(conn)
         do_channels(conn)
+    print(f'LUID {last_entity_id()}')
     return 0
 
 
