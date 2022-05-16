@@ -63,7 +63,7 @@ def do_group_access(
 
     with conn.cursor(row_factory=class_row(GroupAccess)) as curs:
         for group_access in curs.execute(
-            'SELECT * FROM nickname WHERE group_id = %s', (group_id,),
+            'SELECT * FROM group_access WHERE group_id = %s', (group_id,),
         ):
             flags = acl_flags[GroupPermission(group_access.level)]
             print(f'GACL {name} {account_name(conn, group_access.account_id)} '
