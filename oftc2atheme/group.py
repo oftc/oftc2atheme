@@ -43,6 +43,9 @@ def do_group(
     conn: Connection[Row],
     group: Group,
 ) -> None:
+    # Fixes the prefix
+    name = group_name(group.id)
+
     flags = '+'
     for flag, flag_char in (
         (not group.flag_private, 'p'),
@@ -50,7 +53,7 @@ def do_group(
         if flag:
             flags += flag_char
 
-    db_line('GRP', next_entity_id(), group.name, group.reg_time, flags)
+    db_line('GRP', next_entity_id(), name, group.reg_time, flags)
 
     for attr, md_name in (
         (group.description, 'description'),
@@ -58,7 +61,7 @@ def do_group(
         (group.email, 'email'),
     ):
         if attr is not None:
-            db_line('MDC', group.name, md_name, attr)
+            db_line('MDC', name, md_name, attr)
 
 
 def do_group_access(

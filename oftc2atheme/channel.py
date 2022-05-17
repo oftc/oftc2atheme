@@ -220,7 +220,7 @@ def do_channel_access(
             if channel_access.account_id is not None:
                 target = account_name(channel_access.account_id)
             elif channel_access.group_id is not None:
-                target = b'!' + group_name(channel_access.group_id)
+                target = group_name(channel_access.group_id)
             else:
                 raise ValueError('channel_access with no target')
 

@@ -37,7 +37,8 @@ def channel_name(
 def group_name(
     group_id: int,
 ) -> bytes:
-    return _name_cache['group'][group_id]
+    # [1:] to trim @ prefix
+    return b'!' + _name_cache['group'][group_id][1:]
 
 
 _entity_id = -1
