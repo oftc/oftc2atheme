@@ -41,8 +41,8 @@ def do_user(
 ) -> None:
     name = account_name(conn, account.id)
 
-    hash = b64encode(b16decode(account.password)).decode('utf-8')
-    crypt = f'$oftc${account.salt}${hash}'
+    hashed = b64encode(b16decode(account.password, casefold=True))
+    crypt = f'$oftc${account.salt}${hashed.decode("utf-8")}'
 
     flags = '+'
     for flag, flag_char in (
