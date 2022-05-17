@@ -9,6 +9,7 @@ from psycopg.rows import class_row
 
 from .common import Channel
 from .common import account_name
+from .common import channel_name
 from .common import group_name
 
 
@@ -122,10 +123,35 @@ def parse_mlock(
     return flags[0], flags[1], limit, key
 
 
+def acl_flags(
+    channel: Channel,
+) -> dict[ChannelPermission, str]:
+    ret = {
+        ChannelPermission.MEMBER_FLAG: '+Aiv',
+        ChannelPermission.CHANOP_FLAG: '+Aiotv',
+        ChannelPermission.MASTER_FLAG: '+AFRefiorstv',
+    }
+    if channel.flag_autoop:
+        for level in (
+            ChannelPermission.CHANOP_FLAG,
+            ChannelPermission.MASTER_FLAG,
+        ):
+            ret[level] += 'O'
+    if channel.flag_autovoice:
+        for level in (
+            ChannelPermission.MEMBER_FLAG,
+            ChannelPermission.CHANOP_FLAG,
+            ChannelPermission.MASTER_FLAG,
+        ):
+            ret[level] += 'V'
+
+    return ret
+
+
 def do_channel(
     conn: Connection[Row],
     channel: Channel,
-) -> None:
+) -> tuple[int, dict[ChannelPermission, str]]:
     flags = '+'
     for flag, flag_char in (
         (channel.flag_private, 'p'),
@@ -152,38 +178,17 @@ def do_channel(
         if attr is not None:
             print(f'MDC {channel.channel} {md_name} {attr}')
 
-    do_channel_access(conn, channel)
-    do_channel_akick(conn, channel)
+    return channel.last_used, acl_flags(channel)
 
 
 def do_channel_access(
     conn: Connection[Row],
-    channel: Channel,
+    channel_data: dict[int, tuple[int, dict[ChannelPermission, str]]],
 ) -> None:
-    acl_flags = {
-        ChannelPermission.MEMBER_FLAG: '+Aiv',
-        ChannelPermission.CHANOP_FLAG: '+Aiotv',
-        ChannelPermission.MASTER_FLAG: '+AFRefiorstv',
-    }
-    if channel.flag_autoop:
-        for level in (
-            ChannelPermission.CHANOP_FLAG,
-            ChannelPermission.MASTER_FLAG,
-        ):
-            acl_flags[level] += 'O'
-    if channel.flag_autovoice:
-        for level in (
-            ChannelPermission.MEMBER_FLAG,
-            ChannelPermission.CHANOP_FLAG,
-            ChannelPermission.MASTER_FLAG,
-        ):
-            acl_flags[level] += 'V'
-
     with conn.cursor(row_factory=class_row(ChannelAccess)) as curs:
-        for channel_access in curs.execute(
-            'SELECT * FROM channel_access WHERE channel_id = %s',
-            (channel.id,),
-        ):
+        for channel_access in curs.execute('SELECT * FROM channel_access'):
+            name = channel_name(conn, channel_access.channel_id)
+
             if channel_access.account_id is not None:
                 target = account_name(conn, channel_access.account_id)
             elif channel_access.group_id is not None:
@@ -191,22 +196,21 @@ def do_channel_access(
             else:
                 raise ValueError('channel_access with no target')
 
+            timestamp, acl_flags = channel_data[channel_access.channel_id]
             flags = acl_flags[ChannelPermission(channel_access.level)]
 
             print(
-                f'CA {channel.channel} {target} {flags} {channel.last_used} *',
+                f'CA {name} {target} {flags} {timestamp} *',
             )
 
 
 def do_channel_akick(
     conn: Connection[Row],
-    channel: Channel,
 ) -> None:
     with conn.cursor(row_factory=class_row(ChannelAkick)) as curs:
         # chmode 0 is AKICK_MASK cf. OFTC include/servicemask.h
         for akick in curs.execute(
-            'SELECT * FROM channel_akick '
-            'WHERE channel_id = %s AND chmode = 0', (channel.id,),
+            'SELECT * FROM channel_akick WHERE chmode = 0',
         ):
             if akick.setter is not None:
                 setter = account_name(conn, akick.setter)
@@ -220,16 +224,21 @@ def do_channel_akick(
             else:
                 raise ValueError('Invalid ChannelAkick')
 
-            print(f'CA {channel.channel} {target} +b {akick.time} {setter}')
-            print(f'MDA {channel.channel} {target} reason {akick.reason}')
+            name = channel_name(conn, akick.channel_id)
+            print(f'CA {name} {target} +b {akick.time} {setter}')
+            print(f'MDA {name} {target} reason {akick.reason}')
             if akick.duration > 0:
                 expires = akick.time + akick.duration
-                print(f'MDA {channel.channel} {target} expires {expires}')
+                print(f'MDA {name} {target} expires {expires}')
 
 
 def do_channels(
     conn: Connection[Row],
 ) -> None:
+    channel_data = {}
     with conn.cursor(row_factory=class_row(Channel)) as curs:
         for channel in curs.execute('SELECT * FROM channel'):
-            do_channel(conn, channel)
+            channel_data[channel.id] = do_channel(conn, channel)
+
+    do_channel_access(conn, channel_data)
+    do_channel_akick(conn)

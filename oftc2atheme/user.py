@@ -29,10 +29,9 @@ class AccountFingerprint:
 
 
 @dataclass
-class AccountAutojoin:
-    id: int
+class AccountAutojoinQ:
     account_id: int
-    channel_id: int
+    channel_ids: list[int]
 
 
 def do_user(
@@ -72,63 +71,45 @@ def do_user(
     if account.flag_admin:
         print(f'SO {name} noc +')
 
-    do_account_autojoin(conn, name, account.id)
-    do_account_access(conn, name, account.id)
-    do_nickname(conn, name, account.id)
-    do_account_fingerprint(conn, name, account.id)
-
 
 def do_account_autojoin(
     conn: Connection[Row],
-    name: str,
-    account_id: int,
 ) -> None:
-    with conn.cursor(row_factory=class_row(AccountAutojoin)) as curs:
-        autojoins = curs.execute(
-            'SELECT * FROM account_autojoin WHERE account_id = %s',
-            (account_id,),
-        ).fetchall()
-        if autojoins:
-            joined = ','.join(channel_name(conn, aj.channel_id)
-                              for aj in autojoins)
+    with conn.cursor(row_factory=class_row(AccountAutojoinQ)) as curs:
+        for autojoin in curs.execute(
+            'SELECT account_id, array_agg(channel_id) AS channel_ids '
+            'FROM account_autojoin GROUP BY account_id',
+        ):
+            name = account_name(conn, autojoin.account_id)
+            joined = ','.join(channel_name(conn, channel_id)
+                              for channel_id in autojoin.channel_ids)
             print(f'MDU {name} private:autojoin {joined}')
 
 
 def do_account_access(
     conn: Connection[Row],
-    name: str,
-    account_id: int,
 ) -> None:
     with conn.cursor(row_factory=class_row(AccountAccess)) as curs:
-        for access in curs.execute(
-            'SELECT * FROM account_access WHERE account_id = %s',
-            (account_id,),
-        ):
+        for access in curs.execute('SELECT * FROM account_access'):
+            name = account_name(conn, access.account_id)
             print(f'AC {name} {access.entry}')
 
 
 def do_nickname(
     conn: Connection[Row],
-    name: str,
-    account_id: int,
 ) -> None:
     with conn.cursor(row_factory=class_row(Nickname)) as curs:
-        for nick in curs.execute(
-            'SELECT * FROM nickname WHERE account_id = %s', (account_id,),
-        ):
+        for nick in curs.execute('SELECT * FROM nickname'):
+            name = account_name(conn, nick.account_id)
             print(f'MN {name} {nick.nick} {nick.reg_time} {nick.last_seen}')
 
 
 def do_account_fingerprint(
     conn: Connection[Row],
-    name: str,
-    account_id: int,
 ) -> None:
     with conn.cursor(row_factory=class_row(AccountFingerprint)) as curs:
-        for cfp in curs.execute(
-            'SELECT * FROM account_fingerprint WHERE account_id = %s',
-            (account_id,),
-        ):
+        for cfp in curs.execute('SELECT * FROM account_fingerprint'):
+            name = account_name(conn, cfp.account_id)
             print(f'MCFP {name} {cfp.fingerprint}')
 
 
@@ -138,3 +119,7 @@ def do_users(
     with conn.cursor(row_factory=class_row(Account)) as curs:
         for account in curs.execute('SELECT * FROM account'):
             do_user(conn, account)
+    do_account_autojoin(conn)
+    do_account_access(conn)
+    do_nickname(conn)
+    do_account_fingerprint(conn)

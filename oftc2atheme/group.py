@@ -7,6 +7,7 @@ from psycopg.rows import class_row
 
 from .common import Group
 from .common import account_name
+from .common import group_name
 from .common import next_entity_id
 
 
@@ -47,13 +48,9 @@ def do_group(
         if attr is not None:
             print(f'MDC {group.name} {md_name} {attr}')
 
-    do_group_access(conn, group.name, group.id)
-
 
 def do_group_access(
     conn: Connection[Row],
-    name: str,
-    group_id: int,
 ) -> None:
     acl_flags = {
         GroupPermission.GRPMEMBER_FLAG: '+Acmv',
@@ -61,9 +58,8 @@ def do_group_access(
     }
 
     with conn.cursor(row_factory=class_row(GroupAccess)) as curs:
-        for group_access in curs.execute(
-            'SELECT * FROM group_access WHERE group_id = %s', (group_id,),
-        ):
+        for group_access in curs.execute('SELECT * FROM group_access'):
+            name = group_name(conn, group_access.group_id)
             flags = acl_flags[GroupPermission(group_access.level)]
             print(f'GACL {name} {account_name(conn, group_access.account_id)} '
                   f'{flags}')
@@ -77,3 +73,4 @@ def do_groups(
     with conn.cursor(row_factory=class_row(Group)) as curs:
         for group in curs.execute('SELECT * FROM group'):
             do_group(conn, group)
+    do_group_access(conn)
