@@ -9,6 +9,7 @@ from psycopg.rows import class_row
 
 from .common import account_name
 from .common import channel_name
+from .common import db_line
 from .common import next_entity_id
 
 
@@ -86,8 +87,8 @@ def do_user(
         if flag:
             flags += flag_char
 
-    print(f'MU {next_entity_id()} {name} {crypt} {account.email} '
-          f'{account.reg_time} {account.last_quit_time} {flags} default')
+    db_line('MU', next_entity_id(), name, crypt, account.email,
+            account.reg_time, account.last_quit_time, flags, 'default')
 
     for attr, md_name in (
         (account.url, 'url'),
@@ -98,10 +99,10 @@ def do_user(
         ('1' if account.flag_enforce else None, 'private:doenforce'),
     ):
         if attr is not None:
-            print(f'MDU {name} {md_name} {attr}')
+            db_line('MDU', name, md_name, attr)
 
     if account.flag_admin:
-        print(f'SO {name} noc +')
+        db_line('SO', name, 'noc', '+')
 
 
 def do_account_autojoin(
@@ -115,7 +116,7 @@ def do_account_autojoin(
             name = account_name(autojoin.account_id)
             joined = ','.join(channel_name(channel_id)
                               for channel_id in autojoin.channel_ids)
-            print(f'MDU {name} private:autojoin {joined}')
+            db_line('MDU', name, 'private:autojoin', joined)
 
 
 def do_account_access(
@@ -124,7 +125,7 @@ def do_account_access(
     with conn.cursor(row_factory=class_row(AccountAccess)) as curs:
         for access in curs.execute('SELECT * FROM account_access'):
             name = account_name(access.account_id)
-            print(f'AC {name} {access.entry}')
+            db_line('AC', name, access.entry)
 
 
 def do_nickname(
@@ -133,7 +134,7 @@ def do_nickname(
     with conn.cursor(row_factory=class_row(Nickname)) as curs:
         for nick in curs.execute('SELECT * FROM nickname'):
             name = account_name(nick.account_id)
-            print(f'MN {name} {nick.nick} {nick.reg_time} {nick.last_seen}')
+            db_line('MN', name, nick.nick, nick.reg_time, nick.last_seen)
 
 
 def do_account_fingerprint(
@@ -142,7 +143,7 @@ def do_account_fingerprint(
     with conn.cursor(row_factory=class_row(AccountFingerprint)) as curs:
         for cfp in curs.execute('SELECT * FROM account_fingerprint'):
             name = account_name(cfp.account_id)
-            print(f'MCFP {name} {cfp.fingerprint}')
+            db_line('MCFP', name, cfp.fingerprint)
 
 
 def do_users(

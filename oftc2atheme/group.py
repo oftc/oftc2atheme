@@ -7,6 +7,7 @@ from psycopg.rows import Row
 from psycopg.rows import class_row
 
 from .common import account_name
+from .common import db_line
 from .common import group_name
 from .common import next_entity_id
 
@@ -49,7 +50,7 @@ def do_group(
         if flag:
             flags += flag_char
 
-    print(f'GRP {next_entity_id()} {group.name} {group.reg_time} {flags}')
+    db_line('GRP', next_entity_id(), group.name, group.reg_time, flags)
 
     for attr, md_name in (
         (group.description, 'description'),
@@ -57,7 +58,7 @@ def do_group(
         (group.email, 'email'),
     ):
         if attr is not None:
-            print(f'MDC {group.name} {md_name} {attr}')
+            db_line('MDC', group.name, md_name, attr)
 
 
 def do_group_access(
@@ -72,15 +73,14 @@ def do_group_access(
         for group_access in curs.execute('SELECT * FROM group_access'):
             name = group_name(group_access.group_id)
             flags = acl_flags[GroupPermission(group_access.level)]
-            print(f'GACL {name} {account_name(group_access.account_id)} '
-                  f'{flags}')
+            db_line('GACL', name, account_name(group_access.account_id), flags)
 
 
 def do_groups(
     conn: Connection[Row],
 ) -> None:
-    print('GDBV 4')
-    print('GFA +AFbcfimsv')
+    db_line('GDBV', '4')
+    db_line('GFA', '+AFbcfimsv')
     with conn.cursor(row_factory=class_row(Group)) as curs:
         for group in curs.execute('SELECT * FROM "group"'):
             do_group(conn, group)

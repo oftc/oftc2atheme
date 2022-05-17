@@ -9,6 +9,7 @@ from psycopg.rows import class_row
 
 from .common import account_name
 from .common import channel_name
+from .common import db_line
 from .common import group_name
 
 
@@ -89,7 +90,7 @@ MODE_LIST = {
 
 
 def do_cf() -> None:
-    print('CF +AFORVbefiorstv')
+    db_line('CF', '+AFORVbefiorstv')
 
 
 def parse_mlock(
@@ -190,8 +191,8 @@ def do_channel(
     mlock_on, mlock_off, mlock_limit, mlock_key = (
         parse_mlock(channel.mlock))
 
-    print(f'MC {channel.channel} {channel.reg_time} {channel.last_used} '
-          f'{flags} {mlock_on} {mlock_off} {mlock_limit} {mlock_key}')
+    db_line('MC', channel.channel, channel.reg_time, channel.last_used, flags,
+            flags, mlock_on, mlock_off, mlock_limit, mlock_key)
 
     for attr, md_name in (
         (channel.url, 'url'),
@@ -201,7 +202,7 @@ def do_channel(
         (channel.reg_time, 'private:channelts'),
     ):
         if attr is not None:
-            print(f'MDC {channel.channel} {md_name} {attr}')
+            db_line('MDC', channel.channel, md_name, attr)
 
     return channel.last_used, acl_flags(channel)
 
@@ -224,9 +225,7 @@ def do_channel_access(
             timestamp, acl_flags = channel_data[channel_access.channel_id]
             flags = acl_flags[ChannelPermission(channel_access.level)]
 
-            print(
-                f'CA {name} {target} {flags} {timestamp} *',
-            )
+            db_line('CA', name, target, flags, timestamp, '*')
 
 
 def do_channel_akick(
@@ -250,11 +249,11 @@ def do_channel_akick(
                 raise ValueError('Invalid ChannelAkick')
 
             name = channel_name(akick.channel_id)
-            print(f'CA {name} {target} +b {akick.time} {setter}')
-            print(f'MDA {name} {target} reason {akick.reason}')
+            db_line('CA', name, target, '+b', akick.time, setter)
+            db_line('MDA', name, target, 'reason', akick.reason)
             if akick.duration > 0:
                 expires = akick.time + akick.duration
-                print(f'MDA {name} {target} expires {expires}')
+                db_line('MDA', name, target, 'expires', expires)
 
 
 def do_channels(

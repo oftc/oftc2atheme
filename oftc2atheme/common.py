@@ -1,3 +1,6 @@
+from sys import stdout
+from typing import Union
+
 from psycopg import Connection
 from psycopg.rows import Row
 from psycopg.rows import tuple_row
@@ -55,3 +58,13 @@ def next_entity_id() -> str:
 
 def last_entity_id() -> str:
     return entity_id(_entity_id)
+
+
+def db_line(
+    *cells: Union[bytes, str, int],
+) -> None:
+    stdout.buffer.write(b' '.join(
+        cell if isinstance(cell, bytes) else str(cell).encode('utf-8')
+        for cell in cells
+    ))
+    stdout.buffer.write(b'\n')

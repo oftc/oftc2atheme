@@ -39,6 +39,7 @@ from psycopg import connect
 
 from .channel import do_cf
 from .channel import do_channels
+from .common import db_line
 from .common import last_entity_id
 from .common import prefetch_names
 from .group import do_groups
@@ -46,16 +47,16 @@ from .user import do_users
 
 
 def main() -> int:
-    print('DBV 12')
-    print('MDEP crypto/oftc')
+    db_line('DBV', '12')
+    db_line('MDEP', 'crypto/oftc')
     do_cf()
-    print(f'TS {int(datetime.now(tz=timezone.utc).timestamp())}')
+    db_line('TS', int(datetime.now(tz=timezone.utc).timestamp()))
     with connect() as conn:
         prefetch_names(conn)
         do_users(conn)
         do_groups(conn)
         do_channels(conn)
-    print(f'LUID {last_entity_id()}')
+    db_line('LUID', last_entity_id())
     return 0
 
 
