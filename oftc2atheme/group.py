@@ -71,6 +71,6 @@ def do_groups(
     print('GDBV 4')
     print('GFA +AFbcfimsv')
     with conn.cursor(row_factory=class_row(Group)) as curs:
-        for group in curs.execute('SELECT * FROM group'):
+        for group in curs.execute('SELECT * FROM "group"'):
             do_group(conn, group)
     do_group_access(conn)
