@@ -40,6 +40,7 @@ from psycopg import connect
 from .channel import do_cf
 from .channel import do_channels
 from .common import last_entity_id
+from .common import prefetch_names
 from .group import do_groups
 from .user import do_users
 
@@ -50,6 +51,7 @@ def main() -> int:
     do_cf()
     print(f'TS {int(datetime.now(tz=timezone.utc).timestamp())}')
     with connect() as conn:
+        prefetch_names(conn)
         do_users(conn)
         do_groups(conn)
         do_channels(conn)

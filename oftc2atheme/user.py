@@ -38,7 +38,7 @@ def do_user(
     conn: Connection[Row],
     account: Account,
 ) -> None:
-    name = account_name(conn, account.id)
+    name = account_name(account.id)
 
     if account.password.startswith('xxx'):
         crypt = f'$oftc${"x"*16}$xxx'
@@ -80,8 +80,8 @@ def do_account_autojoin(
             'SELECT account_id, array_agg(channel_id) AS channel_ids '
             'FROM account_autojoin GROUP BY account_id',
         ):
-            name = account_name(conn, autojoin.account_id)
-            joined = ','.join(channel_name(conn, channel_id)
+            name = account_name(autojoin.account_id)
+            joined = ','.join(channel_name(channel_id)
                               for channel_id in autojoin.channel_ids)
             print(f'MDU {name} private:autojoin {joined}')
 
@@ -91,7 +91,7 @@ def do_account_access(
 ) -> None:
     with conn.cursor(row_factory=class_row(AccountAccess)) as curs:
         for access in curs.execute('SELECT * FROM account_access'):
-            name = account_name(conn, access.account_id)
+            name = account_name(access.account_id)
             print(f'AC {name} {access.entry}')
 
 
@@ -100,7 +100,7 @@ def do_nickname(
 ) -> None:
     with conn.cursor(row_factory=class_row(Nickname)) as curs:
         for nick in curs.execute('SELECT * FROM nickname'):
-            name = account_name(conn, nick.account_id)
+            name = account_name(nick.account_id)
             print(f'MN {name} {nick.nick} {nick.reg_time} {nick.last_seen}')
 
 
@@ -109,7 +109,7 @@ def do_account_fingerprint(
 ) -> None:
     with conn.cursor(row_factory=class_row(AccountFingerprint)) as curs:
         for cfp in curs.execute('SELECT * FROM account_fingerprint'):
-            name = account_name(conn, cfp.account_id)
+            name = account_name(cfp.account_id)
             print(f'MCFP {name} {cfp.fingerprint}')
 
 

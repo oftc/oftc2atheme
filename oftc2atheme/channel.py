@@ -187,12 +187,12 @@ def do_channel_access(
 ) -> None:
     with conn.cursor(row_factory=class_row(ChannelAccess)) as curs:
         for channel_access in curs.execute('SELECT * FROM channel_access'):
-            name = channel_name(conn, channel_access.channel_id)
+            name = channel_name(channel_access.channel_id)
 
             if channel_access.account_id is not None:
-                target = account_name(conn, channel_access.account_id)
+                target = account_name(channel_access.account_id)
             elif channel_access.group_id is not None:
-                target = f'!{group_name(conn, channel_access.group_id)}'
+                target = f'!{group_name(channel_access.group_id)}'
             else:
                 raise ValueError('channel_access with no target')
 
@@ -213,18 +213,18 @@ def do_channel_akick(
             'SELECT * FROM channel_akick WHERE chmode = 0',
         ):
             if akick.setter is not None:
-                setter = account_name(conn, akick.setter)
+                setter = account_name(akick.setter)
             else:
                 setter = '*'
 
             if akick.target is not None:
-                target = account_name(conn, akick.target)
+                target = account_name(akick.target)
             elif akick.mask is not None:
                 target = akick.mask
             else:
                 raise ValueError('Invalid ChannelAkick')
 
-            name = channel_name(conn, akick.channel_id)
+            name = channel_name(akick.channel_id)
             print(f'CA {name} {target} +b {akick.time} {setter}')
             print(f'MDA {name} {target} reason {akick.reason}')
             if akick.duration > 0:

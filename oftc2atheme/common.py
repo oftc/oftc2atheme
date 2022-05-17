@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from functools import cache
 from typing import Optional
-from typing import cast
 
 from psycopg import Connection
 from psycopg.rows import Row
@@ -41,21 +39,6 @@ class Nickname:
     last_seen: Optional[int]
 
 
-@cache
-def account_name(
-    conn: Connection[Row],
-    account_id: int,
-) -> str:
-    with conn.cursor(row_factory=tuple_row) as curs:
-        result = curs.execute(
-            'SELECT nick FROM account, nickname '
-            'WHERE account.id = %s AND account.primary_nick=nickname.id',
-            (account_id,),
-        ).fetchone()
-        assert result is not None
-        return cast(str, result[0])
-
-
 @dataclass
 class Channel:
     id: int
@@ -82,19 +65,6 @@ class Channel:
     last_used: int
 
 
-@cache
-def channel_name(
-    conn: Connection[Row],
-    channel_id: int,
-) -> str:
-    with conn.cursor(row_factory=tuple_row) as curs:
-        result = curs.execute(
-            'SELECT channel FROM channel WHERE id = %s', (channel_id,),
-        ).fetchone()
-        assert result is not None
-        return cast(str, result[0])
-
-
 @dataclass
 class Group:
     id: int
@@ -106,17 +76,38 @@ class Group:
     reg_time: int
 
 
-@cache
-def group_name(
+_name_cache: dict[str, dict[int, str]]
+
+
+def prefetch_names(
     conn: Connection[Row],
+) -> None:
+    for kind, query in (
+        ('account', 'SELECT account.id, nick FROM account, nickname '
+            'WHERE account.primary_nick=nickname.id'),
+        ('channel', 'SELECT id, channel FROM channel'),
+        ('group', 'SELECT id, name FROM "group"'),
+    ):
+        with conn.cursor(row_factory=tuple_row) as curs:
+            _name_cache[kind] = {row[0]: row[1] for row in curs.execute(query)}
+
+
+def account_name(
+    account_id: int,
+) -> str:
+    return _name_cache['account'][account_id]
+
+
+def channel_name(
+    channel_id: int,
+) -> str:
+    return _name_cache['channel'][channel_id]
+
+
+def group_name(
     group_id: int,
 ) -> str:
-    with conn.cursor(row_factory=tuple_row) as curs:
-        result = curs.execute(
-            'SELECT name FROM group WHERE id = %s', (group_id,),
-        ).fetchone()
-        assert result is not None
-        return cast(str, result[0])
+    return _name_cache['group'][group_id]
 
 
 _entity_id = -1
