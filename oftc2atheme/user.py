@@ -88,7 +88,8 @@ def do_user(
             flags += flag_char
 
     db_line('MU', next_entity_id(), name, crypt, account.email,
-            account.reg_time, account.last_quit_time, flags, 'default')
+            account.reg_time, account.last_quit_time or account.reg_time,
+            flags, 'default')
 
     for attr, md_name in (
         (account.url, 'url'),
@@ -134,7 +135,7 @@ def do_nickname(
     with conn.cursor(row_factory=class_row(Nickname)) as curs:
         for nick in curs.execute('SELECT * FROM nickname'):
             name = account_name(nick.account_id)
-            db_line('MN', name, nick.nick, nick.reg_time, nick.last_seen)
+            db_line('MN', name, nick.nick, nick.reg_time, nick.last_seen or 0)
 
 
 def do_account_fingerprint(
