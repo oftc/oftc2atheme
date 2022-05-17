@@ -6,7 +6,7 @@ from psycopg.rows import Row
 from psycopg.rows import tuple_row
 
 
-_name_cache: dict[str, dict[int, str]]
+_name_cache: dict[str, dict[int, str]] = {}
 
 
 def prefetch_names(
