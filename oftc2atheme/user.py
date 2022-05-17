@@ -41,7 +41,10 @@ def do_user(
 ) -> None:
     name = account_name(conn, account.id)
 
-    hashed = b64encode(b16decode(account.password, casefold=True))
+    if account.password == 'xxx':  # noqa: S105
+        hashed = b'xxx'
+    else:
+        hashed = b64encode(b16decode(account.password, casefold=True))
     crypt = f'$oftc${account.salt}${hashed.decode("utf-8")}'
 
     flags = '+'
