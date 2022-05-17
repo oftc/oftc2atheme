@@ -26,7 +26,7 @@ The following information is invented in the conversion:
     - If the channel is AUTOOP, +O is added to CHANOP and MASTER.
     - If the channel is AUTOVOICE, +V is added to MEMBER, CHANOP, and MASTER.
 * Group access flags set by access level.
-    - MEMBER maps to +A
+    - MEMBER maps to +Acmv
     - MASTER maps to +AFbcfimsv
 * Admin accounts are given the noc service operator class.
 * The account's last quit time is used for Atheme's last login time.
