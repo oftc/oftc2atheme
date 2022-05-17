@@ -15,10 +15,10 @@ from .common import next_entity_id
 @dataclass
 class Group:
     id: int
-    name: str
-    description: Optional[str]
-    url: Optional[str]
-    email: Optional[str]
+    name: bytes
+    description: Optional[bytes]
+    url: Optional[bytes]
+    email: Optional[bytes]
     flag_private: bool
     reg_time: int
 

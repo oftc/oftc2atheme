@@ -17,11 +17,11 @@ from .common import next_entity_id
 class Account:
     id: int
     primary_nick: int
-    password: str
-    salt: str
-    url: Optional[str]
-    email: str
-    cloak: Optional[str]
+    password: bytes
+    salt: bytes
+    url: Optional[bytes]
+    email: bytes
+    cloak: Optional[bytes]
     flag_enforce: bool
     flag_secure: bool
     flag_verified: bool
@@ -30,9 +30,9 @@ class Account:
     flag_email_verified: bool
     flag_private: bool
     language: int
-    last_host: Optional[str]
-    last_realname: Optional[str]
-    last_quit_msg: Optional[str]
+    last_host: Optional[bytes]
+    last_realname: Optional[bytes]
+    last_quit_msg: Optional[bytes]
     last_quit_time: Optional[int]
     reg_time: int
 
@@ -40,7 +40,7 @@ class Account:
 @dataclass
 class Nickname:
     id: int
-    nick: str
+    nick: bytes
     account_id: int
     reg_time: int
     last_seen: Optional[int]
@@ -50,14 +50,14 @@ class Nickname:
 class AccountAccess:
     id: int
     account_id: int
-    entry: str
+    entry: bytes
 
 
 @dataclass
 class AccountFingerprint:
     id: int
     account_id: int
-    fingerprint: str
+    fingerprint: bytes
     nickname_id: int
 
 
@@ -73,11 +73,11 @@ def do_user(
 ) -> None:
     name = account_name(account.id)
 
-    if account.password.startswith('xxx'):
-        crypt = f'$oftc${"x"*16}$xxx'
+    if account.password.startswith(b'xxx'):
+        crypt = b'$oftc$xxxxxxxxxxxxxxxx$xxx'
     else:
         hashed = b64encode(b16decode(account.password, casefold=True))
-        crypt = f'$oftc${account.salt}${hashed.decode("utf-8")}'
+        crypt = b'$oftc$' + account.salt + b'$' + hashed
 
     flags = '+'
     for flag, flag_char in (
@@ -115,8 +115,8 @@ def do_account_autojoin(
             'FROM account_autojoin GROUP BY account_id',
         ):
             name = account_name(autojoin.account_id)
-            joined = ','.join(channel_name(channel_id)
-                              for channel_id in autojoin.channel_ids)
+            joined = b','.join(channel_name(channel_id)
+                               for channel_id in autojoin.channel_ids)
             db_line('MDU', name, 'private:autojoin', joined)
 
 

@@ -16,7 +16,7 @@ from .common import group_name
 @dataclass
 class Channel:
     id: int
-    channel: str
+    channel: bytes
     flag_private: bool
     flag_restricted: bool
     flag_topic_lock: bool
@@ -28,12 +28,12 @@ class Channel:
     flag_autovoice: bool
     flag_leaveops: bool
     flag_autosave: bool
-    description: str
-    url: Optional[str]
-    email: Optional[str]
-    entrymsg: Optional[str]
-    topic: Optional[str]
-    mlock: Optional[str]
+    description: bytes
+    url: Optional[bytes]
+    email: Optional[bytes]
+    entrymsg: Optional[bytes]
+    topic: Optional[bytes]
+    mlock: Optional[bytes]
     expirebans_lifetime: int
     reg_time: int
     last_used: int
@@ -54,8 +54,8 @@ class ChannelAkick:
     channel_id: int
     setter: Optional[int]
     target: Optional[int]
-    mask: Optional[str]
-    reason: str
+    mask: Optional[bytes]
+    reason: bytes
     time: int
     duration: int
     chmode: int
@@ -94,14 +94,16 @@ def do_cf() -> None:
 
 
 def parse_mlock(
-    mlock: Optional[str],
+    mlock_bytes: Optional[bytes],
 ) -> tuple[int, int, int, str]:
     flags = [0, 0]
     limit = 0
     key = ''
 
-    if mlock is None:
+    if mlock_bytes is None:
         return flags[0], flags[1], limit, key
+
+    mlock = mlock_bytes.decode('utf-8')
 
     args = mlock.split(' ')
     argi = 1
@@ -218,7 +220,7 @@ def do_channel_access(
             if channel_access.account_id is not None:
                 target = account_name(channel_access.account_id)
             elif channel_access.group_id is not None:
-                target = f'!{group_name(channel_access.group_id)}'
+                target = b'!' + group_name(channel_access.group_id)
             else:
                 raise ValueError('channel_access with no target')
 
@@ -239,7 +241,7 @@ def do_channel_akick(
             if akick.setter is not None:
                 setter = account_name(akick.setter)
             else:
-                setter = '*'
+                setter = b'*'
 
             if akick.target is not None:
                 target = account_name(akick.target)

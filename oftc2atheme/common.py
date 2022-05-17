@@ -6,7 +6,7 @@ from psycopg.rows import Row
 from psycopg.rows import tuple_row
 
 
-_name_cache: dict[str, dict[int, str]] = {}
+_name_cache: dict[str, dict[int, bytes]] = {}
 
 
 def prefetch_names(
@@ -24,19 +24,19 @@ def prefetch_names(
 
 def account_name(
     account_id: int,
-) -> str:
+) -> bytes:
     return _name_cache['account'][account_id]
 
 
 def channel_name(
     channel_id: int,
-) -> str:
+) -> bytes:
     return _name_cache['channel'][channel_id]
 
 
 def group_name(
     group_id: int,
-) -> str:
+) -> bytes:
     return _name_cache['group'][group_id]
 
 
