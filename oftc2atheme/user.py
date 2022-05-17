@@ -40,11 +40,11 @@ def do_user(
 ) -> None:
     name = account_name(conn, account.id)
 
-    if account.password == 'xxx':  # noqa: S105
-        hashed = b'xxx'
+    if account.password.startswith('xxx'):
+        crypt = f'$oftc${"x"*16}$xxx'
     else:
         hashed = b64encode(b16decode(account.password, casefold=True))
-    crypt = f'$oftc${account.salt}${hashed.decode("utf-8")}'
+        crypt = f'$oftc${account.salt}${hashed.decode("utf-8")}'
 
     flags = '+'
     for flag, flag_char in (
