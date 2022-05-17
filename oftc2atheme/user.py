@@ -1,16 +1,48 @@
 from base64 import b16decode
 from base64 import b64encode
 from dataclasses import dataclass
+from typing import Optional
 
 from psycopg import Connection
 from psycopg.rows import Row
 from psycopg.rows import class_row
 
-from .common import Account
-from .common import Nickname
 from .common import account_name
 from .common import channel_name
 from .common import next_entity_id
+
+
+@dataclass
+class Account:
+    id: int
+    primary_nick: int
+    password: str
+    salt: str
+    url: Optional[str]
+    email: str
+    cloak: Optional[str]
+    flag_enforce: bool
+    flag_secure: bool
+    flag_verified: bool
+    flag_cloak_enabled: bool
+    flag_admin: bool
+    flag_email_verified: bool
+    flag_private: bool
+    language: int
+    last_host: Optional[str]
+    last_realname: Optional[str]
+    last_quit_msg: Optional[str]
+    last_quit_time: Optional[int]
+    reg_time: int
+
+
+@dataclass
+class Nickname:
+    id: int
+    nick: str
+    account_id: int
+    reg_time: int
+    last_seen: Optional[int]
 
 
 @dataclass

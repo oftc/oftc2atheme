@@ -7,10 +7,35 @@ from psycopg import Connection
 from psycopg.rows import Row
 from psycopg.rows import class_row
 
-from .common import Channel
 from .common import account_name
 from .common import channel_name
 from .common import group_name
+
+
+@dataclass
+class Channel:
+    id: int
+    channel: str
+    flag_private: bool
+    flag_restricted: bool
+    flag_topic_lock: bool
+    flag_verbose: bool
+    flag_autolimit: bool
+    flag_expirebans: bool
+    flag_floodserv: bool
+    flag_autoop: bool
+    flag_autovoice: bool
+    flag_leaveops: bool
+    flag_autosave: bool
+    description: str
+    url: Optional[str]
+    email: Optional[str]
+    entrymsg: Optional[str]
+    topic: Optional[str]
+    mlock: Optional[str]
+    expirebans_lifetime: int
+    reg_time: int
+    last_used: int
 
 
 @dataclass

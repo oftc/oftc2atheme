@@ -1,14 +1,25 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 from psycopg import Connection
 from psycopg.rows import Row
 from psycopg.rows import class_row
 
-from .common import Group
 from .common import account_name
 from .common import group_name
 from .common import next_entity_id
+
+
+@dataclass
+class Group:
+    id: int
+    name: str
+    description: Optional[str]
+    url: Optional[str]
+    email: Optional[str]
+    flag_private: bool
+    reg_time: int
 
 
 @dataclass
