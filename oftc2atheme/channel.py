@@ -90,7 +90,7 @@ MODE_LIST = {
 
 
 def do_cf() -> None:
-    db_line('CF', '+AFORVbefiorstv')
+    db_line('CF', '+AFORSVbefiorstv')
 
 
 def parse_mlock(
