@@ -100,19 +100,19 @@ def parse_mlock(
     limit = 0
     key = ''
 
-    if mlock_bytes is None:
+    if mlock_bytes in (None, b'', b' '):
         return flags[0], flags[1], limit, key
 
     mlock = mlock_bytes.decode('utf-8')
 
-    args = mlock.split(' ')
+    args = mlock.strip().split(' ')
     argi = 1
 
-    dir: Literal[0, 1]
+    i: Literal[0, 1] = 0
     if mlock[0] not in ('+', '-'):
         raise ValueError(f'malformed mlock: {mlock}')
 
-    for char in mlock:
+    for char in args[0]:
         if char == '+':
             i = 0
         elif char == '-':
