@@ -194,7 +194,7 @@ def do_channel(
         parse_mlock(channel.mlock))
 
     db_line('MC', channel.channel, channel.reg_time, channel.last_used, flags,
-            flags, mlock_on, mlock_off, mlock_limit, mlock_key)
+            mlock_on, mlock_off, mlock_limit, mlock_key)
 
     for attr, md_name in (
         (channel.url, 'url'),
