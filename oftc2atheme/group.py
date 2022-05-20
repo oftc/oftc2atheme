@@ -83,7 +83,7 @@ def do_groups(
     conn: Connection[Row],
 ) -> None:
     db_line('GDBV', '4')
-    db_line('GFA', '+AFbcfimsv')
+    db_line('GFA', '+Acfimsv')
     with conn.cursor(row_factory=class_row(Group)) as curs:
         for group in curs.execute('SELECT * FROM "group"'):
             do_group(conn, group)
