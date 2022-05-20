@@ -79,7 +79,7 @@ def do_user(
         hashed = b64encode(b16decode(account.password, casefold=True))
         crypt = b'$oftc$' + account.salt + b'$' + hashed
 
-    flags = '+'
+    flags = '+C'
     for flag, flag_char in (
         (account.flag_private, 'ps'),  # private implies hidemail
         (not account.flag_verified, 'W'),
