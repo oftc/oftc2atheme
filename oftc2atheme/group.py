@@ -61,7 +61,7 @@ def do_group(
         (group.email, 'email'),
     ):
         if attr is not None:
-            db_line('MDC', name, md_name, attr)
+            db_line('MDG', name, md_name, attr)
 
 
 def do_group_access(
