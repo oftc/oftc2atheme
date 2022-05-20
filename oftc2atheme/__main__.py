@@ -47,6 +47,7 @@ from .user import do_users
 
 
 def main() -> int:
+    db_line('GRVER', '1')
     db_line('DBV', '12')
     db_line('MDEP', 'crypto/oftc')
     do_cf()
